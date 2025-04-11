@@ -16,20 +16,40 @@ function Index() {
   const [contact, setContact] = useState("");
   const [data, setData] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [pages, setPages] = useState([{ page: 1, lastKey: null }]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastKey, setLastKey] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getData();
   }, []);
 
+  useEffect(() => {
+    console.log("last key", lastKey);
+  }, [lastKey]);
+
   const flattenItem = (item) => {
     const flat = {};
     for (const key in item) {
-      flat[key] = item[key].S || item[key].N || item[key].BOOL || null;
+      if (item[key].S !== undefined) {
+        flat[key] = item[key].S;
+      } else if (item[key].N !== undefined) {
+        flat[key] = Number(item[key].N);
+      } else if (item[key].BOOL !== undefined) {
+        flat[key] = item[key].BOOL;
+      } else if (item[key].L !== undefined) {
+        flat[key] = item[key].L.map((entry) => entry.S); // for attachments
+      } else {
+        flat[key] = null;
+      }
     }
     return flat;
   };
 
-  const getData = async () => {
+  const getData = async (page = 1) => {
+    const current = pages[page - 1];
+    const lastKeyParam = current?.lastKey;
     const myHeaders = new Headers();
     myHeaders.append("Accept", "application/json");
     myHeaders.append("Content-Type", "application/json");
@@ -41,14 +61,23 @@ function Index() {
 
     try {
       const response = await fetch(
-        `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question`,
-        requestOptions
+        `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?limit=8${
+          lastKeyParam ? `&lastKey=${lastKeyParam}` : ""
+        }`
       );
       const result = await response.json();
       console.log(result);
-      if (result.status === "success") {
-        const cleaned = result.body.map(flattenItem);
-        setData(cleaned);
+      const body = JSON.parse(result.body);
+      console.log(body);
+      if (result.statusCode === 200) {
+        const newItems = (body.items || []).map(flattenItem);
+
+        setData(newItems); // always replace old data
+        setCurrentPage(page);
+        if (body.lastKey && !pages[page]) {
+          setPages([...pages, { page: page + 1, lastKey: body.lastKey }]);
+        }
+        setLastKey(body.lastKey);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -145,30 +174,13 @@ function Index() {
             closeModal(); // ✅ Close modal after success
           }, 1000);
 
-          getData();
+          getData(1)
         }
       } catch (error) {
         console.error("Error:", error);
       }
     }
   };
-
- /*  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-  
-    const filteredNewFiles = newFiles.filter(
-      (newFile) => !selectedFiles.some((f) => f.name === newFile.name)
-    );
-  
-    const totalFiles = [...selectedFiles, ...filteredNewFiles];
-  
-    if (totalFiles.length > 3) {
-      alert("Maximum of 3 attachments.");
-      return;
-    }
-  
-    setSelectedFiles(totalFiles);
-  }; */
 
   return (
     <div>
@@ -310,6 +322,28 @@ function Index() {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+        <div className="d-flex justify-content-end px-5 mb-2">
+          <div className="pagination" style={{ marginTop: "1rem" }}>
+            {pages.map((p, index) => (
+              <button
+                key={index}
+                onClick={() => getData(p.page)}
+                style={{
+                  margin: "0 4px",
+                  padding: "6px 12px",
+                  backgroundColor:
+                    currentPage === p.page ? "#007bff" : "#f0f0f0",
+                  color: currentPage === p.page ? "#fff" : "#000",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                {p.page}
+              </button>
+            ))}
           </div>
         </div>
       </Template>

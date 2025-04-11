@@ -1,0 +1,34 @@
+import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+
+const region = "ap-southeast-1";
+
+const client = new DynamoDBClient({ region});
+
+export const handler = async (event) => {
+  try {
+    const command = new ScanCommand({
+      TableName: "ForumOgisSAP" // replace with your table name
+    });
+
+    const data = await client.send(command);
+
+    // Sort by createdAt descending (newest first)
+    const sortedItems = data.Items.sort((a, b) =>
+      new Date(b.createdAt.S) - new Date(a.createdAt.S)
+    );
+
+    return {
+      statusCode: 200,
+      status:"success",
+      body: sortedItems
+    };
+
+  } catch (error) {
+    console.error("Scan error:", error);
+
+    return {
+      statusCode: 500,
+      body: { error: error.message },
+    };
+  }
+};

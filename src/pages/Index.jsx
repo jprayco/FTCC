@@ -5,6 +5,7 @@ import Input from "../components/forms/Input";
 import TextArea from "../components/forms/TextArea";
 import Swal from "sweetalert2";
 import { Modal as BootstrapModal } from "bootstrap";
+import AttachFile from "../components/forms/AttachFile";
 
 function Index() {
   const modalRef = useRef(null);
@@ -14,11 +15,11 @@ function Index() {
   const [email, setEmail] = useState("");
   const [contact, setContact] = useState("");
   const [data, setData] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     getData();
   }, []);
-
 
   const flattenItem = (item) => {
     const flat = {};
@@ -66,270 +67,248 @@ function Index() {
     if (modal) modal.hide();
   };
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const myHeaders = new Headers();
-    myHeaders.append("Accept", "application/json");
-    myHeaders.append("Content-Type", "application/json");
+    console.log(title);
+    console.log(description);
+    console.log(name);
+    console.log(email);
+    console.log(contact);
+    console.log(selectedFiles);
+    console.log(selectedFiles.length);
 
-    const raw = JSON.stringify({ title, description, name, email, contact });
-
-    const requestOptions = {
-      method: "PUT",
-      headers: myHeaders,
-      body: raw,
-    };
-
-    try {
-      const response = await fetch(
-        "https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question",
-        requestOptions
-      );
-      const result = await response.json();
-
-      if (result.status === "success") {
-        setTitle("");
-        setDescription("");
-        setName("");
-        setEmail("");
-        setContact("");
-
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Question Posted",
-          showConfirmButton: false,
-          timer: 1000,
-        });
-
-        setTimeout(() => {
-          closeModal(); // ✅ Close modal after success
-        }, 1000);
+    let isNotValid = {};
+    selectedFiles.forEach((file) => {
+      const extension = file.name
+        .substring(file.name.lastIndexOf("."))
+        .toLowerCase();
+      console.log(`File: ${file.name}, Extension: ${extension}`);
+      const validExtension = new Set([".pdf", ".jpg", ".jpeg", ".png"]);
+      if (validExtension.has(extension)) {
+        console.log("valid", extension);
+      } else {
+        console.log("not valid ", extension);
+        isNotValid.extension = "File not valid";
       }
-    } catch (error) {
-      console.error("Error:", error);
+    });
+
+    let noInvalidFile = Object.keys(isNotValid).length === 0;
+
+    if (noInvalidFile) {
+      console.log("No invalid file");
+
+      const formData = new FormData();
+      for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append("files", selectedFiles[i]);
+      }
+
+      const requestOptions = {
+        method: "POST",
+        body: formData,
+      };
+
+      try {
+        const response = await fetch(
+          `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?title=${title}&description=${description}&name=${name}&email=${email}&contact=${contact}`,
+          requestOptions
+        );
+        const result = await response.json();
+
+        if (result.statusCode === 200) {
+          setTitle("");
+          setDescription("");
+          setName("");
+          setEmail("");
+          setContact("");
+          setSelectedFiles([]);
+
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Question Posted",
+            showConfirmButton: false,
+            timer: 1000,
+          });
+
+          setTimeout(() => {
+            closeModal(); // ✅ Close modal after success
+          }, 1000);
+
+          getData();
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
     }
   };
+
+ /*  const handleFileChange = (e) => {
+    const newFiles = Array.from(e.target.files);
+  
+    const filteredNewFiles = newFiles.filter(
+      (newFile) => !selectedFiles.some((f) => f.name === newFile.name)
+    );
+  
+    const totalFiles = [...selectedFiles, ...filteredNewFiles];
+  
+    if (totalFiles.length > 3) {
+      alert("Maximum of 3 attachments.");
+      return;
+    }
+  
+    setSelectedFiles(totalFiles);
+  }; */
 
   return (
     <div>
       <Template>
-        <div className="bg-white py-5">
-          <div className="container mt-5">
-            <h1 className="fw-bold">Welcome to OGIS PH SAP Forum</h1>
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Error
-              dolorum beatae vero nemo non laboriosam dicta, aperiam quod
-              cupiditate mollitia impedit numquam, autem reiciendis molestias?
-            </p>
-            <div className="border rounded">
-              <form>
-                <input placeholder="Looking for something?" className="input" />
-                <button className="btn">
-                  <i className="bi bi-search"></i>
-                </button>
-              </form>
+        <div className="bg-white w-100">
+          <div className="container">
+            <div className="p-2 d-flex border-bottom align-items-end">
+              <h2>
+                <i className="fa fa-ticket px-2" aria-hidden="true"></i>
+              </h2>
+              <h3 className="">B1 SUPPORT TICKET</h3>
+              <h5 className="text-secondary px-3">
+                List of B1 support ticket.
+              </h5>
             </div>
           </div>
         </div>
-
-        <div className="container py-3">
-          <div className="row m-0 p-0 ">
-            <div className="col-8">
-              <h3>Recent Activity</h3>
-
-              {/*   <div className="bg-white">
-                <div className="p-3 d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center">
-                    <div className="icon-profile">
-                      <i className="bi bi-incognito"></i>
-                    </div>
-                    <div className=" mx-1">Anonymous User</div>
+        <div className="px-5">
+          <div>
+            <div className="d-flex justify-content-end py-3">
+              <label htmlFor="exampleFormControlInput1" className="px-2">
+                Search :{" "}
+              </label>
+              <input type="search" className="border" placeholder="" />
+            </div>
+          </div>
+          <table className="table ">
+            <thead className="">
+              <tr className="">
+                <th scope="col" className="p-0 m-0">
+                  <div className="bg-blue text-white d-flex justify-content-center p-3">
+                    Title
                   </div>
-                  <div>
-                    <div className="mx-3">
-                      <i className="bi bi-chat-right-text mx-1"></i>
-                      <span>10</span>
-                    </div>
+                </th>
+                <th scope="col" className="p-0 m-0">
+                  <div className="bg-blue text-white d-flex justify-content-center p-3">
+                    Description
                   </div>
-                </div>
-                <div className="m-0 pb-2">
-                  <div className="px-3 ">
-                    <h5>
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Error dolorum beatae vero nemo non laboriosam dicta,
-                      aperiam quod
-                    </h5>
-                    <p>
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Error dolorum beatae vero nemo non laboriosam dicta,
-                      aperiam quod cupiditate mollitia impedit numquam, autem
-                      reiciendis molestias?
-                    </p>
+                </th>
+                <th scope="col" className="p-0 m-0">
+                  <div className="bg-blue text-white d-flex justify-content-center p-3">
+                    Date Posted
                   </div>
-                </div>
-              </div> */}
+                </th>
+                <th scope="col" className="p-0 m-0">
+                  <div className="bg-blue text-white d-flex justify-content-center p-3">
+                    Owner
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
               {Array.isArray(data) &&
                 data.map((item, index) => (
-                  <div key={index} className="bg-white mb-3">
-                    <div className="p-3 d-flex align-items-center justify-content-between">
-                      <div className="d-flex align-items-center">
-                        <div className="icon-profile">
-                          <i className="bi bi-incognito"></i>
-                        </div>
-                        <div className="mx-1">
-                          {item.name || "Anonymous User"}
-                        </div>
-                      </div>
-                      <div className="mx-3">
-                        <i className="bi bi-chat-right-text mx-1"></i>
-                        <span>{item.replies || 0}</span>
-                      </div>
-                    </div>
-                    <div className="px-3 pb-2">
-                      <h5>{item.title}</h5>
-                      <p>{item.description}</p>
-                    </div>
-                  </div>
+                  <tr key={index}>
+                    <td className="p-3">{item.title}</td>
+                    <td className="p-3">{item.description}</td>
+                    <td className="p-3 text-center">
+                      {formatDate(item.createdAt)}
+                    </td>
+                    <td className="p-3 text-center">{item.name}</td>
+                  </tr>
                 ))}
-            </div>
-            <div className="col-4">
-              <div className="bg-white rounded p-3 mb-2">
-                <h4>Ask a Question</h4>
-                <div>
-                  <button className="btn btn-primary px-5" onClick={openModal}>
-                    Post
+            </tbody>
+          </table>
+        </div>
+        <div className="btn-container">
+          <button className=" btn-blue-circle" onClick={openModal}>
+            <i className="fa fa-plus" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div className="modal fade" ref={modalRef} tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <form onSubmit={handleSubmit}>
+                <div className="modal-header p-1 m-0 bg-blue text-white">
+                  <i className="fa fa-users px-3" aria-hidden="true"></i>
+                  <h5 className="modal-title">Post Ticket</h5>
+                  <button
+                    type="button"
+                    className="btn-close fs-10 px-3"
+                    onClick={closeModal}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="form-control bg-light-gray">
+                    <i className="fa fa-info px-2" aria-hidden="true"></i>{" "}
+                    <small>All fields are required</small>{" "}
+                  </div>
+                  <div></div>
+                  <Input
+                    name="Title : "
+                    type="text"
+                    value={title}
+                    getValue={(e) => setTitle(e.target.value)}
+                    placeholder="* Error title: e.g. Cannot post transaction."
+                  />
+                  <TextArea
+                    name="Description :"
+                    value={description}
+                    getValue={(e) => setDescription(e.target.value)}
+                    placeholder="Description of error: e.g. Error 1001: Data missing."
+                  />
+                  <Input
+                    name="Name :"
+                    type="text"
+                    value={name}
+                    getValue={(e) => setName(e.target.value)}
+                  />
+                  <Input
+                    name="Email :"
+                    type="email"
+                    value={email}
+                    getValue={(e) => setEmail(e.target.value)}
+                  />
+                  <Input
+                    name="Contact :"
+                    type="text"
+                    value={contact}
+                    getValue={(e) => setContact(e.target.value)}
+                  />
+                  <AttachFile
+                    selectedFiles={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
+                  />
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-transparent border"
+                    onClick={closeModal}
+                  >
+                    Cancel
                   </button>
-
-                  <div className="modal fade" ref={modalRef} tabIndex="-1">
-                    <div className="modal-dialog">
-                      <div className="modal-content">
-                        <form onSubmit={handleSubmit}>
-                          <div className="modal-header">
-                            <h5 className="modal-title">Ask a Question</h5>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              onClick={closeModal}
-                            ></button>
-                          </div>
-                          <div className="modal-body">
-                            <Input
-                              name="Title"
-                              type="text"
-                              value={title}
-                              getValue={(e) => setTitle(e.target.value)}
-                            />
-                            <TextArea
-                              name="Description"
-                              value={description}
-                              getValue={(e) => setDescription(e.target.value)}
-                            />
-                            <Input
-                              name="Name"
-                              type="text"
-                              value={name}
-                              getValue={(e) => setName(e.target.value)}
-                            />
-                            <Input
-                              name="Email"
-                              type="email"
-                              value={email}
-                              getValue={(e) => setEmail(e.target.value)}
-                            />
-                            <Input
-                              name="Contact"
-                              type="text"
-                              value={contact}
-                              getValue={(e) => setContact(e.target.value)}
-                            />
-                          </div>
-                          <div className="modal-footer">
-                            <button type="submit" className="btn btn-primary">
-                              Submit
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-secondary"
-                              onClick={closeModal}
-                            >
-                              Close
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
+                  <button type="submit" className="btn-blue">
+                    Post Ticket
+                  </button>
                 </div>
-              </div>
-              <div className="bg-white rounded p-3">
-                <div>Contact Us</div>
-                <div className="row my-3 p-0">
-                  <div className="col-2">
-                    <div className="h-3 w-3 rounded bg-light d-flex justify-content-center align-items-center">
-                      <i className="bi bi-envelope-fill"></i>
-                    </div>
-                  </div>
-                  <div className="col-10">
-                    <h6 className="m-0 p-0">Email</h6>
-                    <small>ftmanagedservices@ogis-ph.com</small>
-                  </div>
-                </div>
-                <div className="row my-3 p-0">
-                  <div className="col-2">
-                    <div className="h-3 w-3 rounded bg-light d-flex justify-content-center align-items-center">
-                      <i className="bi bi-telephone-fill"></i>
-                    </div>
-                  </div>
-                  <div className="col-10">
-                    <h6 className="m-0 p-0">Phone</h6>
-                    <div>
-                      <small>+63956 325 3392</small>
-                    </div>
-                    <div>
-                      <small>+63917 512 2176</small>
-                    </div>
-                    <div>
-                      <small>+63915 343 4354</small>
-                    </div>
-                  </div>
-                </div>
-                <div className="row my-3 p-0">
-                  <div className="col-2">
-                    <div className="h-3 w-3 rounded bg-light d-flex justify-content-center align-items-center">
-                      <i className="bi bi-globe2"></i>
-                    </div>
-                  </div>
-                  <div className="col-10">
-                    <h6 className="m-0 p-0">Website</h6>
-                    <a
-                      href="https://fasttrackmanagedservices.com/"
-                      target="_blank"
-                    >
-                      <small>https://fasttrackmanagedservices.com/</small>
-                    </a>
-                  </div>
-                </div>
-
-                <div>Social Media</div>
-                <div className="d-flex">
-                  <a
-                    className="fs-3 px-1 text-teal"
-                    href="https://www.linkedin.com/company/fasttrack-managed-services/?originalSubdomain=ph"
-                    target="_blank"
-                  >
-                    <i className="bi bi-linkedin"></i>
-                  </a>
-                  <a
-                    className="fs-3 px-1 text-blue"
-                    href="https://www.facebook.com/FasttrackSolutionsPH"
-                    target="_blank"
-                  >
-                    <i className="bi bi-facebook"></i>
-                  </a>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>

@@ -1,0 +1,142 @@
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import * as multipart from "parse-multipart";
+
+const region = 'ap-southeast-1';
+const client = new DynamoDBClient({ region }); // change region if needed
+const s3Client = new S3Client({ region })
+
+
+async function uploadToS3(parts, id) {
+  const uploadedPaths = [];
+  const upload = parts.map(async (part, index) => {
+    const filePath = `ogis-sap/${id}-${part.filename}`;
+    const params = {
+      Bucket: "ogis-cc-public",
+      Key: filePath,
+      Body: part.data,
+      ContentType: part.type,
+    };
+
+    const command = new PutObjectCommand(params);
+
+    try {
+      const response = await s3Client.send(command);
+      console.log("File uploaded successfully:", response);
+      uploadedPaths.push(filePath);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  });
+
+  try {
+    const responses = await Promise.all(upload);
+    return uploadedPaths;
+  } catch (error) {
+    console.error("Error uploading files:", error);
+    return {
+      error: "Failed to upload one or more parts to S3",
+    };
+  }
+}
+
+const uid = () => {
+  return Date.now() + '-' + Math.floor(Math.random() * 10000);
+};
+
+async function putToDB(fields, uploadedPaths) {
+  const tableName = "ForumOgisSAP";
+  const id = `qa-${uid()}`;
+
+  const item = {
+    id: { S: id },
+    title: { S: fields.title || "Default Title" },
+    description: { S: fields.description || "Default description" },
+    name: { S: fields.name || "Default Name" },
+    email: { S: fields.email || "Default email" },
+    contact: { S: fields.contact || "Default contact" },
+    createdAt: { S: new Date().toISOString() },
+    attachments: {
+      L: uploadedPaths.map(path => ({ S: path }))
+    }
+  };
+
+  const command = new PutItemCommand({
+    TableName: tableName,
+    Item: item,
+  });
+
+  try {
+    await client.send(command);
+    return {
+      item: item
+    };
+  } catch (error) {
+    console.error("PutItem error:", error);
+    return {
+      message: "Failed to add item", error
+    };
+  }
+}
+
+export const handler = async (event) => {
+  try {
+    const bodyBuffer = Buffer.from(event["body-json"].toString(), "base64");
+    const contentTypeHeader =  event.params.header["content-type"] 
+ /*    const boundary = multipart.getBoundary(contentTypeHeader); */
+
+    if (!contentTypeHeader) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "Missing Content-Type header", headers: event.params.header }),
+      };
+    }
+    
+    const boundary = contentTypeHeader.split("boundary=")[1];
+
+    if (!boundary) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "No boundary found in the content-type header",
+        }),
+      };
+    }
+
+    const parts = multipart.Parse(bodyBuffer, boundary);
+
+    const fields = {
+      "title" : event.params.querystring['title'],
+      "description": event.params.querystring['description'],
+      "name": event.params.querystring['name'],
+      "email": event.params.querystring['email'],
+      "contact": event.params.querystring['contact']
+    }
+
+    const fileId = `file-${uid()}`;
+
+    const uploadedPaths  = await uploadToS3(parts, fileId);
+
+    const saveToDB = await putToDB(fields, uploadedPaths);
+
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "Data and files uploaded successfully",
+        data: fields,
+        header: event.headers
+      }),
+    };
+  } catch (err) {
+    console.error("Handler error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: "Internal server error",
+        error: err.message || err,
+      }),
+    };
+  }
+};
+

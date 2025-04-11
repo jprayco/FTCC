@@ -3,7 +3,75 @@
 
 $color-light:#e8ebe6;
 $color-teal:#007BB6;
-$color-blue:#3B5998;
+$color-blue:#1976D2;
+$color-light-gray:#F0F0F0;
+$color-gray: #C8C8C8;
+
+.bg-light-gray{
+    background-color: $color-light-gray;
+}
+
+.bg-gray{
+    background-color: $color-gray;
+}
+
+.bg-blue{
+    background-color: $color-blue;
+}
+
+.btn-blue-circle{
+    background-color: $color-blue;
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    padding: 1rem 1.5rem;
+    font-size: 1.5rem;
+}
+.btn-blue-circle:hover{
+    box-shadow: 1px 1px 20px $color-gray;
+    opacity: 0.9;
+}
+.btn-blue{
+    background-color: $color-blue;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    padding: 6px 15px;
+}
+.btn-blue:hover{
+    opacity: 0.9;
+}
+
+.fs-10{
+    font-size: 10px;
+}
+
+.btn-container{
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+}
+
+.mt-10{
+    margin-top: 5rem;
+}
+
+.w-18{
+width: 18rem;
+}
+
+.w-50{
+    width: 300px;
+}
+.border-bottom-gray{
+    border-bottom: 1px solid gray;
+}
+
+.w-13{
+    width: 13rem;
+    }
+    
 
 .w-5{
     width: 5rem;

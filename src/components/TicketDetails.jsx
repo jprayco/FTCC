@@ -3,7 +3,7 @@ import { Modal as BootstrapModal } from "bootstrap";
 import ModalTemp from "../components/modals/Template";
 import Comments from "./Comments";
 
-function TicketDetails({ name, date, title, description, attachments }) {
+function TicketDetails({ name, date, title, description, attachments , id}) {
   const modalRef = useRef(null);
   const [img, setimg] = useState("");
 
@@ -30,7 +30,7 @@ function TicketDetails({ name, date, title, description, attachments }) {
             <h5 className="p-0 m-0">
               <i className="fa fa-ticket px-2" aria-hidden="true"></i>
             </h5>
-            <h5 className="p-0 m-0">Ticket Code: </h5>
+            <h5 className="p-0 m-0">Ticket Code: {id}</h5>
           </div>
         </div>
         <div className="py-3 px-4">

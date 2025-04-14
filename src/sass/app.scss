@@ -98,7 +98,7 @@ width: 18rem;
     height: 3rem;
 }
 
-.w-5{
+.h-5{
     height: 5rem;
 }
 
@@ -117,4 +117,20 @@ width: 18rem;
 
 .cursor-pointer{
     cursor: pointer;
+}
+
+.loading{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    z-index: 10;
+    position: absolute;
+    width: 100%;
+    background-color: #C8C8C8;
+    opacity: 0.5;
+}
+
+.z-5{
+    z-index: 5;
 }

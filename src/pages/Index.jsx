@@ -8,6 +8,7 @@ import { Modal as BootstrapModal } from "bootstrap";
 import AttachFile from "../components/forms/AttachFile";
 import { useNavigate } from "react-router-dom";
 import ModalTemp from "../components/modals/Template";
+import Loading from "../components/Loading";
 
 function Index() {
   const modalRef = useRef(null);
@@ -52,6 +53,7 @@ function Index() {
   };
 
   const getData = async (page = 1) => {
+    setLoading(true)
     const current = pages[page - 1];
     const lastKeyParam = current?.lastKey;
     const myHeaders = new Headers();
@@ -82,6 +84,7 @@ function Index() {
           setPages([...pages, { page: page + 1, lastKey: body.lastKey }]);
         }
         setLastKey(body.lastKey);
+        setLoading(false)
       }
     } catch (error) {
       console.error("Error:", error);
@@ -111,6 +114,8 @@ function Index() {
   };
 
   const handleSubmit = async (e) => {
+    closeModal()
+    setLoading(true)
     e.preventDefault();
 
     console.log(title);
@@ -179,6 +184,7 @@ function Index() {
           }, 1000);
 
           getData(1);
+          setLoading(false)
         }
       } catch (error) {
         console.error("Error:", error);
@@ -193,7 +199,8 @@ function Index() {
 
   return (
     <div>
-      <Template>
+    {loading ? <Loading/> : "" }
+       <Template>
         <div className="bg-white w-100">
           <div className="container">
             <div className="p-2 d-flex border-bottom align-items-end">
@@ -266,7 +273,12 @@ function Index() {
             <i className="fa fa-plus" aria-hidden="true"></i>
           </button>
         </div>
-        <ModalTemp modalRef={modalRef} closeModal={closeModal} title="Post Ticket" icon="fa fa-users px-3">
+        <ModalTemp
+          modalRef={modalRef}
+          closeModal={closeModal}
+          title="Post Ticket"
+          icon="fa fa-users px-3"
+        >
           <form onSubmit={handleSubmit}>
             <div className="form-control bg-light-gray">
               <i className="fa fa-info px-2" aria-hidden="true"></i>{" "}

@@ -10,6 +10,7 @@ import AttachFile from "../components/forms/AttachFile";
 import Swal from "sweetalert2";
 import Comments from "../components/Comments";
 import ContactUs from "../components/ContactUs";
+import Loading from "../components/Loading";
 
 function Ticket() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ function Ticket() {
   const [email, setEmail] = useState();
   const [contact, setContact] = useState();
   const [comments, setComments] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const openModal = (url) => {
     const modal = new BootstrapModal(modalRef.current);
@@ -69,6 +71,7 @@ function Ticket() {
   };
 
   const getData = async (id) => {
+    setLoading(true);
     const myHeaders = new Headers();
     myHeaders.append("Accept", "application/json");
     myHeaders.append("Content-Type", "application/json");
@@ -95,6 +98,7 @@ function Ticket() {
           item: flattenedItem,
           attachments: flattenedAttachments,
         });
+        setLoading(false)
       }
     } catch (error) {
       console.error("Error:", error);
@@ -113,6 +117,9 @@ function Ticket() {
   };
 
   const handleSubmit = async (e) => {
+    closeModal()
+    setLoading(true)
+
     e.preventDefault();
 
     console.log(id);
@@ -178,6 +185,8 @@ function Ticket() {
           setTimeout(() => {
             closeModal(); // ✅ Close modal after success
           }, 1000);
+
+          setLoading(false)
         }
       } catch (error) {
         console.error("Error:", error);
@@ -186,6 +195,7 @@ function Ticket() {
   };
 
   const getComments = async () => {
+    setLoading(true)
     const requestOptions = {
       method: "GET",
     };
@@ -206,6 +216,7 @@ function Ticket() {
           ...body,
           item: flattenedItems,
         });
+        setLoading(false)
       }
     } catch (error) {
       console.error("Error:", error);
@@ -215,6 +226,7 @@ function Ticket() {
 
   return (
     <div>
+      {loading ? <Loading/> : "" }
       <Template>
         <div className="bg-white w-100">
           <div className="container">
@@ -233,6 +245,7 @@ function Ticket() {
                   title={data.item?.title}
                   description={data.item?.description}
                   attachments={data.attachments}
+                  id = {id}
                 />
                 <Comments comments={comments} setComments={setComments} />
               </div>

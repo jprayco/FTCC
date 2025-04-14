@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { Modal as BootstrapModal } from "bootstrap";
 import AttachFile from "../components/forms/AttachFile";
 import { useNavigate } from "react-router-dom";
+import ModalTemp from "../components/modals/Template";
 
 function Index() {
   const modalRef = useRef(null);
@@ -177,7 +178,7 @@ function Index() {
             closeModal(); // ✅ Close modal after success
           }, 1000);
 
-          getData(1)
+          getData(1);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -185,10 +186,10 @@ function Index() {
     }
   };
 
-  const showTicket = (id)=>{
-console.log("click", id)
-navigate(`/ticket/${id}`);
-  }
+  const showTicket = (id) => {
+    console.log("click", id);
+    navigate(`/ticket/${id}`);
+  };
 
   return (
     <div>
@@ -243,7 +244,12 @@ navigate(`/ticket/${id}`);
             <tbody>
               {Array.isArray(data) &&
                 data.map((item, index) => (
-                  <tr key={index} onClick={()=>{showTicket(item.id)}}>
+                  <tr
+                    key={index}
+                    onClick={() => {
+                      showTicket(item.id);
+                    }}
+                  >
                     <td className="p-3">{item.title}</td>
                     <td className="p-3">{item.description}</td>
                     <td className="p-3 text-center">
@@ -260,78 +266,61 @@ navigate(`/ticket/${id}`);
             <i className="fa fa-plus" aria-hidden="true"></i>
           </button>
         </div>
-
-        <div className="modal fade" ref={modalRef} tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <form onSubmit={handleSubmit}>
-                <div className="modal-header p-1 m-0 bg-blue text-white">
-                  <i className="fa fa-users px-3" aria-hidden="true"></i>
-                  <h5 className="modal-title">Post Ticket</h5>
-                  <button
-                    type="button"
-                    className="btn-close fs-10 px-3"
-                    onClick={closeModal}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <div className="form-control bg-light-gray">
-                    <i className="fa fa-info px-2" aria-hidden="true"></i>{" "}
-                    <small>All fields are required</small>{" "}
-                  </div>
-                  <div></div>
-                  <Input
-                    name="Title : "
-                    type="text"
-                    value={title}
-                    getValue={(e) => setTitle(e.target.value)}
-                    placeholder="* Error title: e.g. Cannot post transaction."
-                  />
-                  <TextArea
-                    name="Description :"
-                    value={description}
-                    getValue={(e) => setDescription(e.target.value)}
-                    placeholder="Description of error: e.g. Error 1001: Data missing."
-                  />
-                  <Input
-                    name="Name :"
-                    type="text"
-                    value={name}
-                    getValue={(e) => setName(e.target.value)}
-                  />
-                  <Input
-                    name="Email :"
-                    type="email"
-                    value={email}
-                    getValue={(e) => setEmail(e.target.value)}
-                  />
-                  <Input
-                    name="Contact :"
-                    type="text"
-                    value={contact}
-                    getValue={(e) => setContact(e.target.value)}
-                  />
-                  <AttachFile
-                    selectedFiles={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
-                  />
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-transparent border"
-                    onClick={closeModal}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-blue">
-                    Post Ticket
-                  </button>
-                </div>
-              </form>
+        <ModalTemp modalRef={modalRef} closeModal={closeModal} title="Post Ticket" icon="fa fa-users px-3">
+          <form onSubmit={handleSubmit}>
+            <div className="form-control bg-light-gray">
+              <i className="fa fa-info px-2" aria-hidden="true"></i>{" "}
+              <small>All fields are required</small>{" "}
             </div>
-          </div>
-        </div>
+            <Input
+              name="Title : "
+              type="text"
+              value={title}
+              getValue={(e) => setTitle(e.target.value)}
+              placeholder="* Error title: e.g. Cannot post transaction."
+            />
+            <TextArea
+              name="Description :"
+              value={description}
+              getValue={(e) => setDescription(e.target.value)}
+              placeholder="Description of error: e.g. Error 1001: Data missing."
+            />
+            <Input
+              name="Name :"
+              type="text"
+              value={name}
+              getValue={(e) => setName(e.target.value)}
+            />
+            <Input
+              name="Email :"
+              type="email"
+              value={email}
+              getValue={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              name="Contact :"
+              type="text"
+              value={contact}
+              getValue={(e) => setContact(e.target.value)}
+            />
+            <AttachFile
+              selectedFiles={selectedFiles}
+              setSelectedFiles={setSelectedFiles}
+            />
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-transparent border"
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-blue">
+                Post Ticket
+              </button>
+            </div>
+          </form>
+        </ModalTemp>
         <div className="d-flex justify-content-end px-5 mb-2">
           <div className="pagination" style={{ marginTop: "1rem" }}>
             {pages.map((p, index) => (

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import "./sass/app.scss";
-import Index from "./pages/Index";
+import WebRoutes from "./routes/Web";
 
 function App() {
   return (
     <div className="App">
-      <Index />
+      <WebRoutes />
     </div>
   );
 }

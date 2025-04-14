@@ -6,6 +6,7 @@ import TextArea from "../components/forms/TextArea";
 import Swal from "sweetalert2";
 import { Modal as BootstrapModal } from "bootstrap";
 import AttachFile from "../components/forms/AttachFile";
+import { useNavigate } from "react-router-dom";
 
 function Index() {
   const modalRef = useRef(null);
@@ -20,6 +21,8 @@ function Index() {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastKey, setLastKey] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getData();
@@ -182,6 +185,11 @@ function Index() {
     }
   };
 
+  const showTicket = (id)=>{
+console.log("click", id)
+navigate(`/ticket/${id}`);
+  }
+
   return (
     <div>
       <Template>
@@ -235,7 +243,7 @@ function Index() {
             <tbody>
               {Array.isArray(data) &&
                 data.map((item, index) => (
-                  <tr key={index}>
+                  <tr key={index} onClick={()=>{showTicket(item.id)}}>
                     <td className="p-3">{item.title}</td>
                     <td className="p-3">{item.description}</td>
                     <td className="p-3 text-center">

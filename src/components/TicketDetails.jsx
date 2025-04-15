@@ -3,7 +3,7 @@ import { Modal as BootstrapModal } from "bootstrap";
 import ModalTemp from "../components/modals/Template";
 import Comments from "./Comments";
 
-function TicketDetails({ name, date, title, description, attachments , id}) {
+function TicketDetails({ data, formatDate}) {
   const modalRef = useRef(null);
   const [img, setimg] = useState("");
 
@@ -20,7 +20,7 @@ function TicketDetails({ name, date, title, description, attachments , id}) {
   };
 
   useEffect(() => {
-    console.log("attachments:", attachments);
+    console.log("attachments:", data.attachments);
   }, []);
   return (
     <div>
@@ -30,19 +30,26 @@ function TicketDetails({ name, date, title, description, attachments , id}) {
             <h5 className="p-0 m-0">
               <i className="fa fa-ticket px-2" aria-hidden="true"></i>
             </h5>
-            <h5 className="p-0 m-0">Ticket Code: {id}</h5>
+            <h5 className="p-0 m-0">Ticket Code: {data.item?.id}</h5>
           </div>
         </div>
         <div className="py-3 px-4">
           <div className="d-flex py-1">
             <span className="m-0 p-0 fw-bold">Posted by : </span>
-            <span className="px-2">{name} </span>
+            <span className="px-2">{data.item?.name} </span>
           </div>
           <div className="d-flex py-1">
             <span className="m-0 p-0 fw-bold">Date Posted : </span>
-            <span className="px-2">{date}</span>
+            <span className="px-2">{formatDate(data.item?.createdAt)}</span>
           </div>
-
+          <div className="d-flex py-1">
+            <span className="m-0 p-0 fw-bold">Nature of Problem: </span>
+            <span className="px-2">{data.item?.problem} </span>
+          </div>
+          <div className="d-flex py-1">
+            <span className="m-0 p-0 fw-bold">SAP type: </span>
+            <span className="px-2">{data.item?.sapTypes} </span>
+          </div>
           <div>
             <div className=" p-0">
               <div className="py-1">
@@ -55,7 +62,7 @@ function TicketDetails({ name, date, title, description, attachments , id}) {
                   type="text"
                   className="border w-100 p-2"
                   disabled
-                  value={title || ""}
+                  value={data.item?.title || ""}
                 />
               </div>
             </div>
@@ -71,14 +78,14 @@ function TicketDetails({ name, date, title, description, attachments , id}) {
                 <textarea
                   className="w-100 p-2"
                   rows="3"
-                  value={description || ""}
+                  value={data.item?.description || ""}
                   disabled
                 ></textarea>
               </div>
             </div>
           </div>
           <div>
-            {attachments?.length > 0 ? (
+            {data.attachments?.length > 0 ? (
               <label htmlFor="exampleFormControlInput1" className="fw-bold">
                 Attachments :
               </label>
@@ -87,7 +94,7 @@ function TicketDetails({ name, date, title, description, attachments , id}) {
             )}
 
             <div className="d-flex">
-              {attachments?.map((file) => (
+              {data.attachments?.map((file) => (
                 <div
                   className="w-13 border mx-1 cursor-pointer"
                   key={file.key}

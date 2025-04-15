@@ -1,6 +1,6 @@
 import React from "react";
 
-function Input({ name, value, getValue, type, placeholder }) {
+function Input({ name, value, getValue, type, placeholder,isRequired=false }) {
   return (
     <div className="form-group ">
       <div className="form-control p-0 row bg-light-gray mx-0 my-2">
@@ -14,7 +14,7 @@ function Input({ name, value, getValue, type, placeholder }) {
           type={type}
           className="border p-1 col-8"
           placeholder={placeholder}
-          required
+          required={isRequired}
           value={value}
           onChange={getValue}
         />

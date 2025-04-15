@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Modal as BootstrapModal } from "bootstrap";
 import ModalTemp from "../components/modals/Template";
 
-function Comments({ comments, setComments }) {
+function Comments({ comments,  formatDate }) {
   const modalRef = useRef(null);
   const [img, setimg] = useState("");
 
@@ -22,15 +22,6 @@ function Comments({ comments, setComments }) {
     console.log("all commentsssss", comments);
   }, [comments]);
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
   return (
     <div>
       <div className="rounded border mt-3 mb-5">

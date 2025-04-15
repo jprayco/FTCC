@@ -19,6 +19,9 @@ function Ticket() {
   const modalRef = useRef(null);
   const [comment, setComment] = useState();
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [ticket, setTicket] = useState({
+    
+  })
   const [name, setName] = useState();
   const [email, setEmail] = useState();
   const [contact, setContact] = useState();
@@ -187,6 +190,7 @@ function Ticket() {
           }, 1000);
 
           setLoading(false)
+          getComments()
         }
       } catch (error) {
         console.error("Error:", error);
@@ -237,19 +241,15 @@ function Ticket() {
               <h3 className="">Ticket Details</h3>
             </div>
 
-            <div className="row m-0 p-0">
-              <div className="col-8 mt-2">
+            <div className="row m-0 p-0 w-100">
+              <div className="col-lg-8 col-md-12 col-sm-12 col-12 mt-2">
                 <TicketDetails
-                  name={data.item?.name}
-                  date={formatDate(data.item?.createdAt)}
-                  title={data.item?.title}
-                  description={data.item?.description}
-                  attachments={data.attachments}
-                  id = {id}
+                  data={data}
+                  formatDate={formatDate}
                 />
-                <Comments comments={comments} setComments={setComments} />
+                <Comments comments={comments}  formatDate={formatDate} />
               </div>
-              <div className="col-4">
+              <div className="col-lg-4 col-md-12 col-sm-12 col-12">
                 <ContactUs />
               </div>
             </div>

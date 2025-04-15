@@ -9,14 +9,23 @@ import AttachFile from "../components/forms/AttachFile";
 import { useNavigate } from "react-router-dom";
 import ModalTemp from "../components/modals/Template";
 import Loading from "../components/Loading";
+import Table from "../components/Table";
+import NatureOfProblem from "../components/forms/Select/NatureOfProblem";
+import SAPTypes from "../components/forms/Select/SAPTypes";
 
 function Index() {
   const modalRef = useRef(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [contact, setContact] = useState("");
+  const [postTicket, setPostTicket] = useState({
+    title: "",
+    description: "",
+    problem: "",
+    sapTypes: "",
+    name: "",
+    email: "",
+    viber: "",
+    facebook: "",
+    linkedin: "",
+  });
   const [data, setData] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [pages, setPages] = useState([{ page: 1, lastKey: null }]);
@@ -25,6 +34,21 @@ function Index() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleChangePost = (field, e) => {
+    const value = e.target.value;
+    setPostTicket((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const resetPost = (field, value) => {
+    setPostTicket((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   useEffect(() => {
     getData();
@@ -53,7 +77,7 @@ function Index() {
   };
 
   const getData = async (page = 1) => {
-    setLoading(true)
+    setLoading(true);
     const current = pages[page - 1];
     const lastKeyParam = current?.lastKey;
     const myHeaders = new Headers();
@@ -84,7 +108,7 @@ function Index() {
           setPages([...pages, { page: page + 1, lastKey: body.lastKey }]);
         }
         setLastKey(body.lastKey);
-        setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -114,82 +138,96 @@ function Index() {
   };
 
   const handleSubmit = async (e) => {
-    closeModal()
-    setLoading(true)
     e.preventDefault();
-
-    console.log(title);
-    console.log(description);
-    console.log(name);
-    console.log(email);
-    console.log(contact);
-    console.log(selectedFiles);
-    console.log(selectedFiles.length);
+    closeModal();
+    setLoading(true);
+    console.log(postTicket);
 
     let isNotValid = {};
     selectedFiles.forEach((file) => {
       const extension = file.name
         .substring(file.name.lastIndexOf("."))
         .toLowerCase();
-      console.log(`File: ${file.name}, Extension: ${extension}`);
       const validExtension = new Set([".pdf", ".jpg", ".jpeg", ".png"]);
-      if (validExtension.has(extension)) {
-        console.log("valid", extension);
-      } else {
-        console.log("not valid ", extension);
+      if (!validExtension.has(extension)) {
         isNotValid.extension = "File not valid";
       }
     });
 
-    let noInvalidFile = Object.keys(isNotValid).length === 0;
-
-    if (noInvalidFile) {
-      console.log("No invalid file");
-
-      const formData = new FormData();
-      for (let i = 0; i < selectedFiles.length; i++) {
-        formData.append("files", selectedFiles[i]);
-      }
-
-      const requestOptions = {
-        method: "POST",
-        body: formData,
-      };
-
-      try {
-        const response = await fetch(
-          `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?title=${title}&description=${description}&name=${name}&email=${email}&contact=${contact}`,
-          requestOptions
-        );
-        const result = await response.json();
-
-        if (result.statusCode === 200) {
-          setTitle("");
-          setDescription("");
-          setName("");
-          setEmail("");
-          setContact("");
-          setSelectedFiles([]);
-
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Question Posted",
-            showConfirmButton: false,
-            timer: 1000,
-          });
-
-          setTimeout(() => {
-            closeModal(); // ✅ Close modal after success
-          }, 1000);
-
-          getData(1);
-          setLoading(false)
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
+    if (Object.keys(isNotValid).length > 0) {
+      Swal.fire("Error", "One or more files have invalid extensions.", "error");
+      setLoading(false);
+      return;
     }
+
+    const result = await Swal.fire({
+      text: "By posting this question you agree to share your details",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, post it!",
+    });
+
+    if (!result.isConfirmed) {
+      setLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    for (let i = 0; i < selectedFiles.length; i++) {
+      formData.append("files", selectedFiles[i]);
+    }
+
+    const requestOptions = {
+      method: "POST",
+      body: formData,
+    };
+
+    const params = new URLSearchParams(postTicket);
+
+    try {
+      const response = await fetch(
+        `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?${params.toString()}`,
+        requestOptions
+      );
+      const result = await response.json();
+
+      if (result.statusCode === 200) {
+        // Reset fields
+        setPostTicket({
+          title: "",
+          description: "",
+          sapTypes: "",
+          problem: "",
+          name: "",
+          email: "",
+          viber: "",
+          facebook: "",
+          linkedin: "",
+        });
+        setSelectedFiles([]);
+
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Question Posted",
+          showConfirmButton: false,
+          timer: 1000,
+        });
+
+        setTimeout(() => {
+          closeModal();
+        }, 1000);
+
+        getData(1);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire("Error", "Something went wrong!", "error");
+    }
+
+    setLoading(false);
   };
 
   const showTicket = (id) => {
@@ -197,24 +235,31 @@ function Index() {
     navigate(`/ticket/${id}`);
   };
 
+  const truncate = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+  };
+
   return (
     <div>
-    {loading ? <Loading/> : "" }
-       <Template>
+      {loading ? <Loading /> : ""}
+      <Template>
         <div className="bg-white w-100">
           <div className="container">
-            <div className="p-2 d-flex border-bottom align-items-end">
+            <div className="p-2 d-flex border-bottom align-items-end flex-wrap">
               <h2>
                 <i className="fa fa-ticket px-2" aria-hidden="true"></i>
               </h2>
-              <h3 className="">B1 SUPPORT TICKET</h3>
-              <h5 className="text-secondary px-3">
-                List of B1 support ticket.
+              <h3 className="pe-3">SAP SUPPORT TICKET</h3>
+              <h5 className="text-secondary">
+                List of SAP support ticket.
               </h5>
             </div>
           </div>
         </div>
-        <div className="px-5">
+        <div className="px-lg-5 px-md-3 px-sm-1 px-1">
           <div>
             <div className="d-flex justify-content-end py-3">
               <label htmlFor="exampleFormControlInput1" className="px-2">
@@ -223,50 +268,29 @@ function Index() {
               <input type="search" className="border" placeholder="" />
             </div>
           </div>
-          <table className="table ">
-            <thead className="">
-              <tr className="">
-                <th scope="col" className="p-0 m-0">
-                  <div className="bg-blue text-white d-flex justify-content-center p-3">
-                    Title
-                  </div>
-                </th>
-                <th scope="col" className="p-0 m-0">
-                  <div className="bg-blue text-white d-flex justify-content-center p-3">
-                    Description
-                  </div>
-                </th>
-                <th scope="col" className="p-0 m-0">
-                  <div className="bg-blue text-white d-flex justify-content-center p-3">
-                    Date Posted
-                  </div>
-                </th>
-                <th scope="col" className="p-0 m-0">
-                  <div className="bg-blue text-white d-flex justify-content-center p-3">
-                    Owner
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(data) &&
-                data.map((item, index) => (
-                  <tr
-                    key={index}
-                    onClick={() => {
-                      showTicket(item.id);
-                    }}
-                  >
-                    <td className="p-3">{item.title}</td>
-                    <td className="p-3">{item.description}</td>
-                    <td className="p-3 text-center">
-                      {formatDate(item.createdAt)}
-                    </td>
-                    <td className="p-3 text-center">{item.name}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <Table>
+            {Array.isArray(data) &&
+              data.map((item, index) => (
+                <tr
+                  key={index}
+                  onClick={() => {
+                    showTicket(item.id);
+                  }}
+                >
+                  <td className="p-3">{truncate(item.title, 30)}</td>
+                  <td className="p-3">{truncate(item.description, 30)}</td>
+                  <td className="p-3 text-center">
+                    {truncate(item.problem, 20)}
+                  </td>
+                  <td className="p-3 text-center">
+                    {truncate(item.sapTypes, 30)}
+                  </td>
+                  <td className="p-3 text-center">
+                    {truncate(formatDate(item.createdAt), 20)}
+                  </td>
+                </tr>
+              ))}
+          </Table>
         </div>
         <div className="btn-container">
           <button className=" btn-blue-circle" onClick={openModal}>
@@ -287,33 +311,60 @@ function Index() {
             <Input
               name="Title : "
               type="text"
-              value={title}
-              getValue={(e) => setTitle(e.target.value)}
+              value={postTicket.title}
+              isRequired={true}
+              getValue={(e) => handleChangePost("title", e)}
               placeholder="* Error title: e.g. Cannot post transaction."
             />
             <TextArea
               name="Description :"
-              value={description}
-              getValue={(e) => setDescription(e.target.value)}
+              value={postTicket.description}
+              isRequired={true}
+              getValue={(e) => handleChangePost("description", e)}
               placeholder="Description of error: e.g. Error 1001: Data missing."
+            />
+            <NatureOfProblem
+              handleChangePost={handleChangePost}
+              postTicket={postTicket}
+            />
+            <SAPTypes
+              handleChangePost={handleChangePost}
+              postTicket={postTicket}
             />
             <Input
               name="Name :"
               type="text"
-              value={name}
-              getValue={(e) => setName(e.target.value)}
+              value={postTicket.name}
+              isRequired={true}
+              getValue={(e) => handleChangePost("name", e)}
             />
             <Input
               name="Email :"
               type="email"
-              value={email}
-              getValue={(e) => setEmail(e.target.value)}
+              value={postTicket.email}
+              isRequired={true}
+              getValue={(e) => handleChangePost("email", e)}
             />
             <Input
-              name="Contact :"
+              name="Viber Number :"
               type="text"
-              value={contact}
-              getValue={(e) => setContact(e.target.value)}
+              value={postTicket.viber}
+              isRequired={true}
+              getValue={(e) => handleChangePost("viber", e)}
+            />
+            <Input
+              name="Facebook :"
+              type="text"
+              value={postTicket.facebook}
+              isRequired={true}
+              getValue={(e) => handleChangePost("facebook", e)}
+            />
+            <Input
+              name="Linkedin :"
+              type="text"
+              value={postTicket.linkedin}
+              isRequired={false}
+              getValue={(e) => handleChangePost("linkedin", e)}
             />
             <AttachFile
               selectedFiles={selectedFiles}

@@ -17,16 +17,16 @@ function Ticket() {
   const [error, setErrorMessage] = useState("");
   const [data, setData] = useState({});
   const modalRef = useRef(null);
-  const [comment, setComment] = useState();
+  const [postComment, setPostComment] = useState({
+    comment: "",
+    name: "",
+    email: "",
+    contact: "",
+  });
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [ticket, setTicket] = useState({
-    
-  })
-  const [name, setName] = useState();
-  const [email, setEmail] = useState();
-  const [contact, setContact] = useState();
   const [comments, setComments] = useState({});
   const [loading, setLoading] = useState(false);
+  const [errorFields, setErrorFields] = useState({});
 
   const openModal = (url) => {
     const modal = new BootstrapModal(modalRef.current);
@@ -101,7 +101,7 @@ function Ticket() {
           item: flattenedItem,
           attachments: flattenedAttachments,
         });
-        setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -119,17 +119,18 @@ function Ticket() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    closeModal()
-    setLoading(true)
+  const handleChangePost = (field, e) => {
+    const value = e.target.value;
+    setPostComment((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+     e.preventDefault();
 
     console.log(id);
-    console.log(comment);
-    console.log(name);
-    console.log(email);
-    console.log(contact);
     console.log(selectedFiles);
     console.log(selectedFiles.length);
 
@@ -163,18 +164,36 @@ function Ticket() {
         body: formData,
       };
 
-      try {
+      if (!validate(postComment)) {
+        setLoading(false);
+        return;
+      }
+      console.log("post comment");
+      closeModal();
+      setLoading(true);
+
+      const params = new URLSearchParams({
+        "id":id,
+        "comment":postComment.comment,
+        "name":postComment.name,
+        "email":postComment.email,
+        "contact":postComment.contact
+      });
+
+       try {
         const response = await fetch(
-          `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question/comment?id=${id}&comment=${comment}&name=${name}&email=${email}&contact=${contact}`,
+          `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question/comment?${params.toString()}`,
           requestOptions
         );
         const result = await response.json();
 
         if (result.statusCode === 200) {
-          setComment("");
-          setName("");
-          setEmail("");
-          setContact("");
+          setPostComment({
+            comment: "",
+            name: "",
+            email: "",
+            contact: "",
+          })
           setSelectedFiles([]);
 
           Swal.fire({
@@ -199,7 +218,7 @@ function Ticket() {
   };
 
   const getComments = async () => {
-    setLoading(true)
+    setLoading(true);
     const requestOptions = {
       method: "GET",
     };
@@ -220,7 +239,7 @@ function Ticket() {
           ...body,
           item: flattenedItems,
         });
-        setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -228,9 +247,54 @@ function Ticket() {
     }
   };
 
+  const checkContact = (field, e) => {
+    const value = e.target.value.trim();
+    const len = value.length;
+    console.log("typing", value);
+    const newErrors = {};
+
+    if (!/^\d+$/.test(value) || len <= 0 || len > 12) {
+      newErrors.contact = "Not a valid contact number";
+      setErrorFields(newErrors);
+    } else if (len !== 11) {
+      newErrors.contact = "Not a valid contact number";
+      setErrorFields(newErrors);
+    } else {
+      setErrorFields({}); // Clear error if valid
+    }
+
+    handleChangePost(field, e); // still pass the event to update the state
+  };
+
+  const isValidEmail = (email) => {
+    return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+  };
+
+  const validate = (postComment) => {
+    const newErrors = {};
+    const iscontact = postComment.contact.trim();
+    const len = iscontact.length;
+
+    if (!/^\d+$/.test(iscontact) || len <= 0 || len > 12) {
+      newErrors.contact = "Not a valid contact number";
+    }
+    if (len !== 11) {
+      newErrors.contact = "Not a valid contact number";
+    }
+    if (!isValidEmail(postComment.email)) {
+      newErrors.email = "Not a valid email";
+    }
+
+    setErrorFields(newErrors);
+
+    const isValid = Object.keys(newErrors).length === 0;
+
+    return isValid;
+  };
+
   return (
     <div>
-      {loading ? <Loading/> : "" }
+      {loading ? <Loading /> : ""}
       <Template>
         <div className="bg-white w-100">
           <div className="container">
@@ -243,11 +307,8 @@ function Ticket() {
 
             <div className="row m-0 p-0 w-100">
               <div className="col-lg-8 col-md-12 col-sm-12 col-12 mt-2">
-                <TicketDetails
-                  data={data}
-                  formatDate={formatDate}
-                />
-                <Comments comments={comments}  formatDate={formatDate} />
+                <TicketDetails data={data} formatDate={formatDate} />
+                <Comments comments={comments} formatDate={formatDate} />
               </div>
               <div className="col-lg-4 col-md-12 col-sm-12 col-12">
                 <ContactUs />
@@ -275,30 +336,38 @@ function Ticket() {
             <div className="my-2">
               <TextArea
                 name=""
-                value={comment || ""}
-                getValue={(e) => setComment(e.target.value)}
+                value={postComment.comment || ""}
+                getValue={(e) => handleChangePost("comment", e)}
+                isRequired={true}
                 placeholder="Your message here."
               />
             </div>
-
             <Input
               name="Name :"
               type="text"
-              value={name || ""}
-              getValue={(e) => setName(e.target.value)}
+              value={postComment.name || ""}
+              isRequired={true}
+              getValue={(e) => handleChangePost("name", e)}
             />
             <Input
               name="Email :"
               type="email"
-              value={email || ""}
-              getValue={(e) => setEmail(e.target.value)}
+              value={postComment.email || ""}
+              isRequired={true}
+              getValue={(e) => handleChangePost("email", e)}
             />
+            <small className="text-danger">{errorFields.email}</small>
             <Input
               name="Contact :"
               type="text"
-              value={contact || ""}
-              getValue={(e) => setContact(e.target.value)}
+              value={postComment.contact || ""}
+              isRequired={true}
+              getValue={(e) => checkContact("contact", e)}
             />
+            <div className="my-2">
+              <small className="text-danger ">{errorFields.contact}</small>
+            </div>
+
             <AttachFile
               selectedFiles={selectedFiles}
               setSelectedFiles={setSelectedFiles}

@@ -33,6 +33,7 @@ function Index() {
   const [lastKey, setLastKey] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState({});
 
   const navigate = useNavigate();
 
@@ -135,8 +136,7 @@ function Index() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    closeModal();
-    setLoading(true);
+
     console.log(postTicket);
 
     let isNotValid = {};
@@ -156,6 +156,11 @@ function Index() {
       return;
     }
 
+    if (!validate(postTicket)) {
+      setLoading(false);
+      return;
+    }
+
     const result = await Swal.fire({
       text: "By posting this question you agree to share your details",
       icon: "warning",
@@ -169,7 +174,8 @@ function Index() {
       setLoading(false);
       return;
     }
-
+    closeModal();
+    setLoading(true);
     const formData = new FormData();
     for (let i = 0; i < selectedFiles.length; i++) {
       formData.append("files", selectedFiles[i]);
@@ -238,6 +244,51 @@ function Index() {
       : text;
   };
 
+  const checkViber = (field, e) => {
+    const value = e.target.value.trim();
+    const len = value.length;
+    console.log("typing", value);
+    const newErrors = {};
+
+    if (!/^\d+$/.test(value) || len <= 0 || len > 12) {
+      newErrors.viber = "Not a valid viber number";
+      setError(newErrors);
+    } else if (len !== 11) {
+      newErrors.viber = "Not a valid viber number";
+      setError(newErrors);
+    } else {
+      setError({}); // Clear error if valid
+    }
+
+    handleChangePost(field, e); // still pass the event to update the state
+  };
+
+  const isValidEmail = (email) => {
+    return /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);
+  };
+
+  const validate = (postTicket) => {
+    const newErrors = {};
+    const isviber = postTicket.viber.trim();
+    const len = isviber.length;
+
+    if (!/^\d+$/.test(isviber) || len <= 0 || len > 12) {
+      newErrors.viber = "Not a valid viber number";
+    }
+    if (len !== 11) {
+      newErrors.viber = "Not a valid viber number";
+    }
+    if (!isValidEmail(postTicket.email)) {
+      newErrors.email = "Not a valid email";
+    }
+
+    setError(newErrors);
+
+    const isValid = Object.keys(newErrors).length === 0;
+
+    return isValid;
+  };
+
   return (
     <div>
       {loading ? <Loading /> : ""}
@@ -270,8 +321,8 @@ function Index() {
                     getData(1); // re-fetch with new search term
                   }
 
-                  if(e.target.value ==""){
-                    getData(1)
+                  if (e.target.value == "") {
+                    getData(1);
                   }
                 }}
               />
@@ -354,13 +405,15 @@ function Index() {
               isRequired={true}
               getValue={(e) => handleChangePost("email", e)}
             />
+            <small className="text-danger">{error.email}</small>
             <Input
               name="Viber Number :"
               type="text"
               value={postTicket.viber}
               isRequired={true}
-              getValue={(e) => handleChangePost("viber", e)}
+              getValue={(e) => checkViber("viber", e)}
             />
+            <small className="text-danger">{error.viber}</small>
             <Input
               name="Facebook :"
               type="text"

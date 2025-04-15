@@ -1,6 +1,6 @@
 import React from 'react'
 
-function TextArea({name, value, getValue, placeholder}) {
+function TextArea({name, value, getValue, placeholder, isRequired}) {
   return (
     <div className="form-group">
     <textarea
@@ -9,6 +9,7 @@ function TextArea({name, value, getValue, placeholder}) {
       value={value}
       onChange={getValue}
       placeholder={placeholder}
+      required={isRequired}
     ></textarea>
   </div>
   )

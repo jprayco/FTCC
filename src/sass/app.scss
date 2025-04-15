@@ -140,3 +140,18 @@ width: 18rem;
     min-width: 75rem;
     max-width: 120rem;
 }
+
+.decoration-none{
+    text-decoration: none;
+    color: #000;
+}
+
+.ticket-nav{
+    color: #000;
+}
+
+.ticket-nav:hover{
+background-color: $color-blue;
+color: #fff;
+}
+

@@ -26,29 +26,30 @@ function TicketDetails({ data, formatDate}) {
     <div>
       <div className="rounded border">
         <div className="d-flex justify-between ">
-          <div className="d-flex bg-light-gray w-100 p-2">
+          <div className="d-flex flex-wrap bg-light-gray w-100 p-2">
             <h5 className="p-0 m-0">
               <i className="fa fa-ticket px-2" aria-hidden="true"></i>
+              Ticket Code:
             </h5>
-            <h5 className="p-0 m-0">Ticket Code: {data.item?.id}</h5>
+            <h5 className="p-0 m-0"> {data.item?.id}</h5>
           </div>
         </div>
         <div className="py-3 px-4">
-          <div className="d-flex py-1">
-            <span className="m-0 p-0 fw-bold">Posted by : </span>
-            <span className="px-2">{data.item?.name} </span>
+          <div className="d-flex  flex-wrap py-1">
+            <span className="m-0 pe-2 p-0 fw-bold">Posted by : </span>
+            <span className="">{data.item?.name} </span>
           </div>
-          <div className="d-flex py-1">
-            <span className="m-0 p-0 fw-bold">Date Posted : </span>
-            <span className="px-2">{formatDate(data.item?.createdAt)}</span>
+          <div className="d-flex  flex-wrap py-1">
+            <span className="m-0 pe-2 p-0 fw-bold">Date Posted : </span>
+            <span className="">{formatDate(data.item?.createdAt)}</span>
           </div>
-          <div className="d-flex py-1">
-            <span className="m-0 p-0 fw-bold">Nature of Problem: </span>
-            <span className="px-2">{data.item?.problem} </span>
+          <div className="d-flex  flex-wrap py-1">
+            <span className="m-0 pe-2 p-0 fw-bold">Nature of Problem: </span>
+            <span className="">{data.item?.problem} </span>
           </div>
-          <div className="d-flex py-1">
-            <span className="m-0 p-0 fw-bold">SAP type: </span>
-            <span className="px-2">{data.item?.sapTypes} </span>
+          <div className="d-flex  flex-wrap py-1">
+            <span className="m-0 pe-2 p-0 fw-bold">SAP type: </span>
+            <span className="">{data.item?.sapTypes} </span>
           </div>
           <div>
             <div className=" p-0">
@@ -57,13 +58,12 @@ function TicketDetails({ data, formatDate}) {
                   Title :
                 </label>
               </div>
-              <div className="py-1">
-                <input
-                  type="text"
-                  className="border w-100 p-2"
-                  disabled
+              <div className="form-group">
+                <textarea
+                  className="w-100 p-2"
                   value={data.item?.title || ""}
-                />
+                  disabled
+                ></textarea>
               </div>
             </div>
           </div>

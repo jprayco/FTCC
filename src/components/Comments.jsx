@@ -37,7 +37,7 @@ function Comments({ comments,  formatDate }) {
           {comments.item?.map((comment, index) => (
             <div className="border p-2" key={index}>
               <div>
-                <div className="d-flex">
+                <div className="d-flex flex-wrap">
                   <span className="m-0 px-1">{comment.name} </span>
                   <span> [  {formatDate(comment.createdAt)} ] </span>
                 </div>

@@ -32,6 +32,7 @@ function Index() {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastKey, setLastKey] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
 
@@ -80,20 +81,15 @@ function Index() {
     setLoading(true);
     const current = pages[page - 1];
     const lastKeyParam = current?.lastKey;
-    const myHeaders = new Headers();
-    myHeaders.append("Accept", "application/json");
-    myHeaders.append("Content-Type", "application/json");
 
-    const requestOptions = {
-      method: "GET",
-      headers: myHeaders,
-    };
+    const queryString = new URLSearchParams();
+    queryString.set("limit", 8);
+    if (lastKeyParam) queryString.set("lastKey", lastKeyParam);
+    if (searchQuery) queryString.set("search", searchQuery);
 
     try {
       const response = await fetch(
-        `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?limit=8${
-          lastKeyParam ? `&lastKey=${lastKeyParam}` : ""
-        }`
+        `https://3ravcf3b88.execute-api.ap-southeast-1.amazonaws.com/Prod/question?${queryString}`
       );
       const result = await response.json();
       console.log(result);
@@ -253,9 +249,7 @@ function Index() {
                 <i className="fa fa-ticket px-2" aria-hidden="true"></i>
               </h2>
               <h3 className="pe-3">SAP SUPPORT TICKET</h3>
-              <h5 className="text-secondary">
-                List of SAP support ticket.
-              </h5>
+              <h5 className="text-secondary">List of SAP support ticket.</h5>
             </div>
           </div>
         </div>
@@ -265,7 +259,22 @@ function Index() {
               <label htmlFor="exampleFormControlInput1" className="px-2">
                 Search :{" "}
               </label>
-              <input type="search" className="border" placeholder="" />
+              <input
+                type="search"
+                className="border"
+                placeholder=""
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    getData(1); // re-fetch with new search term
+                  }
+
+                  if(e.target.value ==""){
+                    getData(1)
+                  }
+                }}
+              />
             </div>
           </div>
           <Table>

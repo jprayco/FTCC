@@ -35,17 +35,17 @@ function TicketDetails({ data, formatDate}) {
           </div>
         </div>
         <div className="py-3 px-4">
-          <div className="d-flex  flex-wrap py-1">
+          {/* <div className="d-flex  flex-wrap py-1">
             <span className="m-0 pe-2 p-0 fw-bold">Posted by : </span>
             <span className="">{data.item?.name} </span>
-          </div>
+          </div> */}
           <div className="d-flex  flex-wrap py-1">
             <span className="m-0 pe-2 p-0 fw-bold">Date Posted : </span>
             <span className="">{formatDate(data.item?.createdAt)}</span>
           </div>
           <div className="d-flex  flex-wrap py-1">
             <span className="m-0 pe-2 p-0 fw-bold">Nature of Problem: </span>
-            <span className="">{data.item?.problem} </span>
+            <span className="">{data.item?.natureOfProblem} </span>
           </div>
           <div className="d-flex  flex-wrap py-1">
             <span className="m-0 pe-2 p-0 fw-bold">SAP type: </span>

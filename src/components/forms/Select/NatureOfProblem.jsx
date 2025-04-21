@@ -25,7 +25,7 @@ const natureOfProblems = [
 function NatureOfProblem({handleChangePost, postTicket}) {
   return (
     <div>
-      <select className="form-control my-2" value={postTicket.problem} onChange={(e)=>(handleChangePost("problem",e))} required>
+      <select className="form-control my-2" value={postTicket.natureOfProblem} onChange={(e)=>(handleChangePost("natureOfProblem",e))} required>
         <option disabled value="">
           *Select Nature of Problem*
         </option>

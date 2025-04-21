@@ -12,17 +12,21 @@ import Loading from "../components/Loading";
 import Table from "../components/Table";
 import NatureOfProblem from "../components/forms/Select/NatureOfProblem";
 import SAPTypes from "../components/forms/Select/SAPTypes";
+import BusinessTypes from "../components/forms/Select/BusinessTypes";
 
 function Index() {
   const modalRef = useRef(null);
   const [postTicket, setPostTicket] = useState({
     title: "",
-    description: "",
-    problem: "",
     sapTypes: "",
+    natureOfProblem: "",
+    description: "",
     name: "",
     email: "",
-    viber: "",
+    mobile: "",
+    telephone: "",
+    companyName: "",
+    businessType: "",
     facebook: "",
     linkedin: "",
   });
@@ -84,7 +88,7 @@ function Index() {
     const lastKeyParam = current?.lastKey;
 
     const queryString = new URLSearchParams();
-    queryString.set("limit", 8);
+    queryString.set("limit", 50);
     if (lastKeyParam) queryString.set("lastKey", lastKeyParam);
     if (searchQuery) queryString.set("search", searchQuery);
 
@@ -199,12 +203,15 @@ function Index() {
         // Reset fields
         setPostTicket({
           title: "",
-          description: "",
           sapTypes: "",
-          problem: "",
+          natureOfProblem: "",
+          description: "",
           name: "",
           email: "",
-          viber: "",
+          mobile: "",
+          telephone: "",
+          companyName: "",
+          businessType: "",
           facebook: "",
           linkedin: "",
         });
@@ -244,22 +251,28 @@ function Index() {
       : text;
   };
 
-  const checkViber = (field, e) => {
+  const checkNo = (field, e) => {
     const value = e.target.value.trim();
     const len = value.length;
     console.log("typing", value);
-    const newErrors = {};
 
     if (!/^\d+$/.test(value) || len <= 0 || len > 12) {
-      newErrors.viber = "Not a valid viber number";
-      setError(newErrors);
+      setError((prev) => ({
+        ...prev,
+        [field]: `Not a valid ${field} number`,
+      }));
     } else if (len !== 11) {
-      newErrors.viber = "Not a valid viber number";
-      setError(newErrors);
+      setError((prev) => ({
+        ...prev,
+        [field]: `Not a valid ${field} number`,
+      }));
     } else {
-      setError({}); // Clear error if valid
+      setError((prev) => {
+        const { [field]: _, ...rest } = prev;
+        return rest;
+      });
     }
-
+    
     handleChangePost(field, e); // still pass the event to update the state
   };
 
@@ -269,15 +282,25 @@ function Index() {
 
   const validate = (postTicket) => {
     const newErrors = {};
-    const isviber = postTicket.viber.trim();
-    const len = isviber.length;
+    const ismobile = postTicket.mobile.trim();
+    const lenMob = ismobile.length;
+    const istelephone = postTicket.telephone.trim();
+    const lenTel = istelephone.length;
 
-    if (!/^\d+$/.test(isviber) || len <= 0 || len > 12) {
-      newErrors.viber = "Not a valid viber number";
+    if (!/^\d+$/.test(ismobile) || lenMob <= 0 || lenMob > 12) {
+      newErrors.mobile = "Not a valid mobile number";
     }
-    if (len !== 11) {
-      newErrors.viber = "Not a valid viber number";
+    if (lenMob !== 11) {
+      newErrors.mobile = "Not a valid mobile number";
     }
+
+    if (!/^\d+$/.test(istelephone) || lenTel <= 0 || lenTel > 12) {
+      newErrors.telephone = "Not a valid telephone number";
+    }
+    if (lenMob !== 11) {
+      newErrors.telephone = "Not a valid telephone number";
+    }
+
     if (!isValidEmail(postTicket.email)) {
       newErrors.email = "Not a valid email";
     }
@@ -340,7 +363,7 @@ function Index() {
                   <td className="p-3">{truncate(item.title, 30)}</td>
                   <td className="p-3">{truncate(item.description, 30)}</td>
                   <td className="p-3 text-center">
-                    {truncate(item.problem, 20)}
+                    {truncate(item.natureOfProblem, 20)}
                   </td>
                   <td className="p-3 text-center">
                     {truncate(item.sapTypes, 30)}
@@ -376,20 +399,20 @@ function Index() {
               getValue={(e) => handleChangePost("title", e)}
               placeholder="* Error title: e.g. Cannot post transaction."
             />
+            <SAPTypes
+              handleChangePost={handleChangePost}
+              postTicket={postTicket}
+            />
+            <NatureOfProblem
+              handleChangePost={handleChangePost}
+              postTicket={postTicket}
+            />
             <TextArea
               name="Description :"
               value={postTicket.description}
               isRequired={true}
               getValue={(e) => handleChangePost("description", e)}
               placeholder="Description of error: e.g. Error 1001: Data missing."
-            />
-            <NatureOfProblem
-              handleChangePost={handleChangePost}
-              postTicket={postTicket}
-            />
-            <SAPTypes
-              handleChangePost={handleChangePost}
-              postTicket={postTicket}
             />
             <Input
               name="Name :"
@@ -407,13 +430,32 @@ function Index() {
             />
             <small className="text-danger">{error.email}</small>
             <Input
-              name="Viber Number :"
+              name="Mobile No. :"
               type="text"
-              value={postTicket.viber}
+              value={postTicket.mobile}
               isRequired={true}
-              getValue={(e) => checkViber("viber", e)}
+              getValue={(e) => checkNo("mobile", e)}
             />
-            <small className="text-danger">{error.viber}</small>
+            <small className="text-danger">{error.mobile}</small>
+            <Input
+              name="Telephone No. :"
+              type="text"
+              value={postTicket.telephone}
+              isRequired={true}
+              getValue={(e) => checkNo("telephone", e)}
+            />
+            <small className="text-danger">{error.telephone}</small>
+            <Input
+              name="Company Name :"
+              type="text"
+              value={postTicket.companyName}
+              isRequired={true}
+              getValue={(e) => handleChangePost("companyName", e)}
+            />
+            <BusinessTypes
+              handleChangePost={handleChangePost}
+              postTicket={postTicket}
+            />
             <Input
               name="Facebook :"
               type="text"

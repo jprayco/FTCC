@@ -38,7 +38,8 @@ function Index() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState({});
-
+  const notice =
+    "By continuing, you agree that we may store and process your information in accordance to the Philippines Republic Act No. 10173, Known as the “Data Privacy Act of 2012”";
   const navigate = useNavigate();
 
   const handleChangePost = (field, e) => {
@@ -59,6 +60,10 @@ function Index() {
   useEffect(() => {
     getData();
   }, []);
+
+  useEffect(() => {
+    console.log("postTicket.businessType",postTicket.businessType)
+  }, [postTicket.businessType]);
 
   useEffect(() => {
     console.log("last key", lastKey);
@@ -166,7 +171,7 @@ function Index() {
     }
 
     const result = await Swal.fire({
-      text: "By posting this question you agree to share your details",
+      text: notice,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -272,7 +277,7 @@ function Index() {
         return rest;
       });
     }
-    
+
     handleChangePost(field, e); // still pass the event to update the state
   };
 
@@ -317,13 +322,20 @@ function Index() {
       {loading ? <Loading /> : ""}
       <Template>
         <div className="bg-white w-100">
-          <div className="container">
-            <div className="p-2 d-flex border-bottom align-items-end flex-wrap">
+          <div className="mx-lg-5 mx-md-5 mx-sm-3 mx-1">
+            <div className="p-2 d-flex align-items-end flex-wrap">
               <h2>
                 <i className="fa fa-ticket px-2" aria-hidden="true"></i>
               </h2>
-              <h3 className="pe-3">SAP SUPPORT TICKET</h3>
-              <h5 className="text-secondary">List of SAP support ticket.</h5>
+              <h3 className="">SAP SUPPORT TICKETS</h3>
+            </div>
+            <div>
+              <button className="btn-blue p-2" onClick={openModal}>
+                <i className="fa fa-plus pe-2" aria-hidden="true"></i>
+                <span className="">
+                  Create new ticket to ask question about SAP
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -374,11 +386,6 @@ function Index() {
                 </tr>
               ))}
           </Table>
-        </div>
-        <div className="btn-container">
-          <button className=" btn-blue-circle" onClick={openModal}>
-            <i className="fa fa-plus" aria-hidden="true"></i>
-          </button>
         </div>
         <ModalTemp
           modalRef={modalRef}
@@ -453,9 +460,10 @@ function Index() {
               getValue={(e) => handleChangePost("companyName", e)}
             />
             <BusinessTypes
-              handleChangePost={handleChangePost}
+              handleChangePost = {handleChangePost}
               postTicket={postTicket}
             />
+            
             <Input
               name="Facebook :"
               type="text"
